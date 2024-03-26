@@ -22,7 +22,6 @@ if __name__ == "__main__":
                         type=str,
                         default="cpu",
                         choices=["cpu", "cuda"])
-    parser.add_argument("--output_len", type=int, default=4)
     parser.add_argument("--seed", type=int, default=12345)
     parser.add_argument("--quant", action='store_true')
     args = parser.parse_args()
@@ -31,6 +30,7 @@ if __name__ == "__main__":
     model_config = config.get_model_config(os.getenv("variant"))
     model_config.dtype = "float32" if args.device == "cpu" else "float16"
     model_config.quant = args.quant
+    output_len = int(os.getenv("output_len", 100)) # Maximum answer length
 
     # Seed random.
     random.seed(args.seed)
@@ -48,5 +48,5 @@ if __name__ == "__main__":
     while True:
         print('======================================')
         prompt = input("Question: ")
-        result = model.generate(prompt, device)
+        result = model.generate(prompt, device, output_len=output_len)
         print(f'RESULT: {result}')
