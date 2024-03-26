@@ -44,7 +44,7 @@ class Sampler(nn.Module):
         embedding: torch.Tensor,
         hidden_states: torch.Tensor,
         output_positions: torch.Tensor,
-        temperatures: torch.Tensor,
+        temperatures: Union[torch.Tensor, None],
         top_ps: torch.Tensor,
         top_ks: torch.Tensor,
         embedding_bias: Optional[torch.Tensor] = None,
@@ -200,7 +200,12 @@ class GemmaMLP(nn.Module):
         )
 
     def forward(self, x):
-        return self.down_proj(F.gelu(self.gate_proj(x)) * self.up_proj(x))
+        gate = self.gate_proj(x)
+        gate = F.gelu(gate, approximate="tanh")
+        up = self.up_proj(x)
+        fuse = gate * up
+        outputs = self.down_proj(fuse)
+        return outputs
 
 
 class GemmaAttention(nn.Module):
@@ -479,7 +484,7 @@ class GemmaForCausalLM(nn.Module):
         kv_caches: List[Tuple[torch.Tensor, torch.Tensor]],
         mask: torch.Tensor,
         output_positions: torch.Tensor,
-        temperatures: torch.Tensor,
+        temperatures: Union[torch.Tensor, None],
         top_ps: torch.Tensor,
         top_ks: torch.Tensor,
         **kwargs,

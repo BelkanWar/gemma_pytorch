@@ -13,6 +13,13 @@ This is the official PyTorch implementation of Gemma models. We provide model an
 You can find the model checkpoints on Kaggle
 [here](https://www.kaggle.com/models/google/gemma/frameworks/pyTorch).
 
+Alternatively, you can find the model checkpoints on the Hugging Face Hub [here](https://huggingface.co/models?other=gemma_torch). To download the models, go the the model repository of the model of interest and click the `Files and versions` tab, and download the model and tokenizer files. For  programmatic downloading, if you have `huggingface_hub`
+installed, you can also run:
+
+```
+huggingface-cli download google/gemma-7b-it-pytorch
+``` 
+
 Note that you can choose between the 2B, 7B, 7B int8 quantized variants.
 
 ```
@@ -137,6 +144,18 @@ docker run -t --rm --privileged \
     --ckpt=/tmp/ckpt \
     --variant="${VARIANT}" \
     # add `--quant` for the int8 quantized model.
+```
+
+### Tokenizer Notes
+
+99 unused tokens are reserved in the pretrained tokenizer model to assist with more efficient training/fine-tuning. Unused tokens are in the string format of `<unused[0-98]>` with token id range of `[7-105]`. 
+
+```
+"<unused0>": 7,
+"<unused1>": 8,
+"<unused2>": 9,
+...
+"<unused98>": 105,
 ```
 
 ## Disclaimer
