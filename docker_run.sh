@@ -1,7 +1,7 @@
 DOCKER_URI=gemma:${USER}
 VARIANT=7b
 VERSION="-it"
-CKPT_PATH=${DATA}Gemma/model/${VARIANT}${VERSION}/gemma-${VARIANT}${VERSION}.ckpt
+CKPT_PATH=${DATA:-/opt/}Gemma/model/${VARIANT}${VERSION}/gemma-${VARIANT}${VERSION}.ckpt
 OUTPUT_LENGTH=300
 
 PROMPT="what kind of company is novo nordisk? "
