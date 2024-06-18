@@ -27,4 +27,4 @@ container-up ::
 	docker run -itd --rm -v ${CKPT_PATH}:/tmp/ckpt -e variant=${VARIANT} -e output_len=${OUTPUT_LENGTH} --name gemma ${DOCKER_URI}
 
 container-down ::
-	docker stop
+	docker stop gemma
