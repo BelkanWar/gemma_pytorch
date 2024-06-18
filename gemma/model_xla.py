@@ -48,7 +48,7 @@ class Sampler(nn.Module):
         top_ps: torch.Tensor,
         top_ks: torch.Tensor,
         embedding_bias: Optional[torch.Tensor] = None,
-    ) -> torch.Tensor:
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         # Select the last element for each sequence.
         # (batch_size, input_len, hidden_size) -> (batch_size, hidden_size)
         hidden_states = hidden_states.index_select(
@@ -71,7 +71,7 @@ class Sampler(nn.Module):
             logits += embedding_bias
 
         if temperatures is None:
-            return torch.argmax(logits, dim=-1).squeeze(dim=-1)
+            return torch.argmax(logits, dim=-1).squeeze(dim=-1), logits
 
         # Apply temperature scaling.
         logits.div_(temperatures.unsqueeze(dim=1))
@@ -100,7 +100,7 @@ class Sampler(nn.Module):
         next_token_ids = torch.multinomial(probs,
                                            num_samples=1,
                                            replacement=True).squeeze(dim=-1)
-        return next_token_ids
+        return next_token_ids, logits
 
 
 def precompute_freqs_cis(dim: int, end: int, theta: float = 10000.0):
@@ -488,7 +488,7 @@ class GemmaForCausalLM(nn.Module):
         top_ps: torch.Tensor,
         top_ks: torch.Tensor,
         **kwargs,
-    ) -> torch.Tensor:
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         freqs_cis = self.freqs_cis.index_select(0, input_positions)
         kv_write_indices = input_positions
 
@@ -508,7 +508,7 @@ class GemmaForCausalLM(nn.Module):
         if self.config.quant:
             embedder_weight = (
                 embedder_weight * self.embedder.weight_scaler.unsqueeze(-1))
-        next_tokens = self.sampler(
+        next_tokens, logits = self.sampler(
             embedding=embedder_weight,
             hidden_states=hidden_states,
             output_positions=output_positions,
@@ -516,7 +516,7 @@ class GemmaForCausalLM(nn.Module):
             top_ps=top_ps,
             top_ks=top_ks,
         )
-        return next_tokens
+        return next_tokens, logits
 
     def load_weights(self, model_path: str):
         checkpoint = torch.load(model_path, weights_only=True)
