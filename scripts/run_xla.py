@@ -157,7 +157,7 @@ def generate(
 
     # Prefill up to min_prompt_len tokens, then treat other prefill as decode and ignore output.
     for i in range(max_seq_len - min_prompt_len):
-        next_token_ids = model(
+        next_token_ids, _ = model(
             input_token_ids=input_token_ids_tensor,
             input_positions=input_positions_tensor,
             kv_write_indices=None,
@@ -257,7 +257,7 @@ if __name__ == '__main__':
     parser.add_argument("--variant",
                         type=str,
                         default="2b",
-                        choices=["2b", "7b"])
+                        choices=["2b", "7b", "9b", "27b"])
     parser.add_argument("--output_len", type=int, default=4)
     parser.add_argument("--seed", type=int, default=12345)
     parser.add_argument("--quant", action='store_true')
